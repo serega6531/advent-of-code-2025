@@ -27,10 +27,17 @@ fun main() {
     }
 
     fun part2(input: String): Long {
-        fun getDivisors(n: Int): List<Int> {
-            return (1..n / 2)
+        val getDivisors = memoize { n: Int ->
+            (1..(n / 2))
                 .filter { n % it == 0 }
                 .toList()
+        }
+
+        fun chunksMatch(str: String, len: Int): Boolean {
+            val totalChunks = str.length / len
+            return (1..<totalChunks).all { i ->
+                str.regionMatches(0, str, i * len, len)
+            }
         }
 
         fun isInvalidId(id: Long): Boolean {
@@ -38,7 +45,7 @@ fun main() {
             val length = str.length
 
             return getDivisors(length).any {
-                str.chunked(it).toSet().size == 1
+                chunksMatch(str, it)
             }
         }
 
