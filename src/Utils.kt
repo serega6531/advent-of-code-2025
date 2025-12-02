@@ -6,14 +6,9 @@ import kotlin.io.path.readText
 /**
  * Reads lines from the given input txt file.
  */
-fun readInput(name: String) = Path("src/$name.txt").readText().trim().lines()
+fun readInput(name: String) = readEntireInput(name).lines()
 
-/**
- * Converts string to md5 hash.
- */
-fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
-    .toString(16)
-    .padStart(32, '0')
+fun readEntireInput(name: String) = Path("src/$name.txt").readText().trim()
 
 /**
  * The cleaner shorthand for printing output.
