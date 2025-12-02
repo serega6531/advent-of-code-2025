@@ -21,13 +21,32 @@ fun main() {
 
         val ranges = parseRanges(input)
         return ranges.asSequence()
-            .flatMap { it.asSequence() }
+            .flatten()
             .filter { isInvalidId(it) }
             .sum()
     }
 
     fun part2(input: String): Long {
-        TODO()
+        fun getDivisors(n: Int): List<Int> {
+            return (1..n / 2)
+                .filter { n % it == 0 }
+                .toList()
+        }
+
+        fun isInvalidId(id: Long): Boolean {
+            val str = id.toString()
+            val length = str.length
+
+            return getDivisors(length).any {
+                str.chunked(it).toSet().size == 1
+            }
+        }
+
+        val ranges = parseRanges(input)
+        return ranges.asSequence()
+            .flatten()
+            .filter { isInvalidId(it) }
+            .sum()
     }
 
     val testInput = readEntireInput("Day02_test")
