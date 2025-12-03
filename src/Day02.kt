@@ -1,3 +1,5 @@
+import kotlin.math.pow
+
 fun main() {
 
     fun parseRange(range: String): LongRange = range.split('-')
@@ -10,49 +12,43 @@ fun main() {
         }
     }
 
-    fun part1(input: String): Long {
-        fun isInvalidId(id: Long): Boolean {
-            val str = id.toString()
-            val length = str.length
+    fun getInvalidIds(range: LongRange, fixedRepeats: Int? = null): Sequence<Long> {
+        val first = range.first.toString()
+        val last = range.last.toString()
+        val repeatsRange = fixedRepeats?.let { it..it } ?: (2..last.length)
+        val prefix = first.commonPrefixWith(last)
 
-            if (length % 2 == 1) return false
-            return str.take(length / 2) == str.drop(length / 2)
+        return sequence {
+            repeatsRange.forEach { repeats ->
+                (1..(last.length / repeats)).forEach { repeatedLength ->
+                    val prefixPart = prefix.take(repeatedLength)
+                    val suffixLength = repeatedLength - prefixPart.length
+                    val repeatedBase = prefixPart.padEnd(repeatedLength, '0').toLong()
+
+                    (0..<(10.0.pow(suffixLength.toDouble()).toLong())).forEach { suffix ->
+                        val repeatedPart = repeatedBase + suffix
+                        val id = repeatedPart.toString().repeat(repeats).toLong()
+
+                        if (id in range) {
+                            yield(id)
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        val ranges = parseRanges(input)
-        return ranges.asSequence()
-            .flatten()
-            .filter { isInvalidId(it) }
+    fun part1(input: String): Long {
+        return parseRanges(input)
+            .flatMap { getInvalidIds(it, fixedRepeats = 2) }
+            .distinct()
             .sum()
     }
 
     fun part2(input: String): Long {
-        val getDivisors = memoize { n: Int ->
-            (1..(n / 2))
-                .filter { n % it == 0 }
-                .toList()
-        }
-
-        fun chunksMatch(str: String, len: Int): Boolean {
-            val totalChunks = str.length / len
-            return (1..<totalChunks).all { i ->
-                str.regionMatches(0, str, i * len, len)
-            }
-        }
-
-        fun isInvalidId(id: Long): Boolean {
-            val str = id.toString()
-            val length = str.length
-
-            return getDivisors(length).any {
-                chunksMatch(str, it)
-            }
-        }
-
-        val ranges = parseRanges(input)
-        return ranges.asSequence()
-            .flatten()
-            .filter { isInvalidId(it) }
+        return parseRanges(input)
+            .flatMap { getInvalidIds(it) }
+            .distinct()
             .sum()
     }
 
