@@ -10,6 +10,23 @@ fun readInput(name: String) = readEntireInput(name).lines()
 
 fun readEntireInput(name: String) = Path("src/$name.txt").readText().trim()
 
+inline fun <T> Iterable<Iterable<T>>.forEachIndexed(action: (y: Int, x: Int, T) -> Unit) {
+    this.forEachIndexed { y, line ->
+        line.forEachIndexed { x, item ->
+            action(y, x, item)
+        }
+    }
+}
+
+@JvmName("forEachIndexedString")
+inline fun Iterable<String>.forEachIndexed(action: (y: Int, x: Int, Char) -> Unit) {
+    this.forEachIndexed { y, line ->
+        line.forEachIndexed { x, item ->
+            action(y, x, item)
+        }
+    }
+}
+
 /**
  * The cleaner shorthand for printing output.
  */
