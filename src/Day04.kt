@@ -1,3 +1,5 @@
+import java.util.LinkedList
+
 fun main() {
 
     fun parseGrid(lines: List<String>): List<List<Boolean>> {
@@ -6,15 +8,13 @@ fun main() {
         }
     }
 
-    fun isAccessible(grid: List<List<Boolean>>, y: Int, x: Int): Boolean {
-        val directions = listOf(-1 to -1, -1 to 0, -1 to 1, 0 to -1, 0 to 1, 1 to -1, 1 to 0, 1 to 1)
+    fun isAccessible(grid: List<List<Boolean>>, yx: YX, removed: Set<YX> = emptySet()): Boolean {
         val maxY = grid.lastIndex
         val maxX = grid.first().lastIndex
 
-        val fullNeighbors = directions.count { (dy, dx) ->
-            val neighborY = y + dy
-            val neighborX = x + dx
-            neighborY in 0..maxY && neighborX in 0..maxX && grid[neighborY][neighborX]
+        val fullNeighbors = neighborDirections.count { direction ->
+            val neighbor = yx + direction
+            neighbor.isInside(maxY, maxX) && grid[neighbor] && neighbor !in removed
         }
 
         return fullNeighbors < 4
@@ -25,13 +25,35 @@ fun main() {
 
         return grid.withIndex().sumOf { (y, row) ->
             row.withIndex().count { (x, isFull) ->
-                isFull && isAccessible(grid, y, x)
+                isFull && isAccessible(grid, YX(y, x))
             }
         }
     }
 
     fun part2(input: List<String>): Int {
-        TODO()
+        val grid = parseGrid(input)
+        val maxY = grid.lastIndex
+        val maxX = grid.first().lastIndex
+
+        val removed = mutableSetOf<YX>()
+        val remaining = (0..maxY).asSequence()
+            .flatMap { y ->
+                (0..maxX).map { x -> YX(y, x) }
+            }
+            .filter { (y, x) -> grid[y][x] }
+            .toCollection(LinkedList())
+
+        while (remaining.isNotEmpty()) {
+            val yx = remaining.removeFirst()
+            val isFull = grid[yx]
+
+            if (yx !in removed && isFull && isAccessible(grid, yx, removed)) {
+                removed.add(yx)
+                remaining.addAll(neighborDirections.map { yx + it }.filter { it.isInside(maxY, maxX) })
+            }
+        }
+
+        return removed.size
     }
 
     val testInput = readInput("Day04_test")
@@ -40,6 +62,6 @@ fun main() {
     check(part1(testInput) == 13)
     part1(input).println()
 
-    check(part2(testInput) == 123)
+    check(part2(testInput) == 43)
     part2(input).println()
 }
