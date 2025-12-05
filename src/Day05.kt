@@ -26,18 +26,11 @@ fun main() {
         return TreeMap(map)
     }
 
-    fun part1(input: String): Int {
-        val (freshRanges, availableIngredients) = parseInventory(input)
-
-        return availableIngredients.count { ingredient -> freshRanges.any { it.contains(ingredient) } }
-    }
-
-    fun part2(input: String): Long {
-        val (freshRanges, _) = parseInventory(input)
-        val edges = buildEdgesMap(freshRanges)
+    fun mergeRanges(ranges: List<LongRange>): List<LongRange> {
+        val edges = buildEdgesMap(ranges)
 
         val activeRanges = mutableSetOf<LongRange>()
-        var result: Long = 0
+        val result = mutableListOf<LongRange>()
         var currentStart: Long? = null
 
         edges.forEach { (index, edgeRanges) ->
@@ -52,16 +45,30 @@ fun main() {
                 }
                 currentlyEmpty && activeRanges.isEmpty() -> {
                     // range starting and ending with the same value (with no other active ranges)
-                    result++
+                    result.add(index..index)
                 }
                 activeRanges.isEmpty() -> {
-                    result += index - currentStart!! + 1
+                    result.add(currentStart!!..index)
                     currentStart = null
                 }
             }
         }
 
         return result
+    }
+
+    fun part1(input: String): Int {
+        val (freshRanges, availableIngredients) = parseInventory(input)
+        val merged = mergeRanges(freshRanges)
+
+        return availableIngredients.count { ingredient -> merged.any { it.contains(ingredient) } }
+    }
+
+    fun part2(input: String): Long {
+        val (freshRanges, _) = parseInventory(input)
+        val merged = mergeRanges(freshRanges)
+
+        return merged.sumOf { it.last - it.first + 1 }
     }
 
     val testInput = readEntireInput("Day05_test")
