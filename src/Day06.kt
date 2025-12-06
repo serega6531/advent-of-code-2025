@@ -13,6 +13,52 @@ fun main() {
         }
     }
 
+    fun parseSingleProblemHorizontally(lines: List<String>): Problem {
+        val operator = lines.last()[0]
+        val operandLines = lines.dropLast(1)
+
+        val maxY = operandLines.maxOf { it.length }
+
+        val operands = (0 until maxY).reversed().map { y ->
+            var operand = 0L
+
+            operandLines
+                .filter { line -> y < line.length && line[y] != ' ' }
+                .forEach { line ->
+                    operand = operand * 10 + line[y].digitToInt()
+                }
+
+            operand
+        }
+
+        return Problem(operator, operands)
+    }
+
+    fun parseProblemsHorizontally(input: String): List<Problem> {
+        val lines = input.lines()
+
+        var start: Int? = null
+        val result = mutableListOf<Problem>()
+
+        lines.last()
+            .withIndex()
+            .forEach { (x, c) ->
+                if (c != ' ') { // operator on last line means new problem starts
+                    if (start != null) {
+                        val bounded = lines.map { it.substring(start!!, x - 1) }
+                        result.add(parseSingleProblemHorizontally(bounded))
+                    }
+
+                    start = x
+                }
+            }
+
+        val lastBounded = lines.map { it.substring(start!!) }
+        result.add(parseSingleProblemHorizontally(lastBounded))
+
+        return result
+    }
+
     fun solve(problem: Problem): Long {
         return when (problem.operator) {
             '+' -> problem.operands.sum()
@@ -27,7 +73,8 @@ fun main() {
     }
 
     fun part2(input: String): Long {
-        TODO()
+        val problems = parseProblemsHorizontally(input)
+        return problems.sumOf { solve(it) }
     }
 
     val testInput = readEntireInput("Day06_test")
@@ -36,7 +83,7 @@ fun main() {
     check(part1(testInput) == 4277556L)
     part1(input).println()
 
-    check(part2(testInput) == 14L)
+    check(part2(testInput) == 3263827L)
     part2(input).println()
 }
 

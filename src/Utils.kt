@@ -7,7 +7,7 @@ import kotlin.math.abs
  */
 fun readInput(name: String) = readEntireInput(name).lines()
 
-fun readEntireInput(name: String) = Path("src/$name.txt").readText().trim()
+fun readEntireInput(name: String) = Path("src/$name.txt").readText()
 
 inline fun <T> Iterable<Iterable<T>>.forEachIndexed(action: (y: Int, x: Int, T) -> Unit) {
     this.forEachIndexed { y, line ->
