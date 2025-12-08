@@ -35,6 +35,8 @@ operator fun <T> List<List<T>>.get(yx: YX): T {
  */
 fun Any?.println() = println(this)
 
+fun List<Int>.product() = this.reduce { acc, i -> acc * i }
+
 /**
  * Creates a memoized version of a function that caches results.
  */
