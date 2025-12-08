@@ -87,7 +87,20 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        TODO()
+        val junctions = input.map(::parseJunction)
+
+        val distancesQueue = buildDistancesQueue(junctions)
+
+        val (circuits, circuitByJunctions) = initCircuits(junctions)
+
+        while(true) {
+            val (first, second) = distancesQueue.remove()
+            mergeCircuits(first, second, circuits, circuitByJunctions)
+
+            if (circuits.size == 1) {
+                return first.x * second.x
+            }
+        }
     }
 
     val testInput = readInput("Day08_test")
