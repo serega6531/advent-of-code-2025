@@ -14,10 +14,8 @@ fun main() {
         }
 
         junctions.forEachIndexed { index, j1 ->
-            junctions.subList(index, junctions.size).forEach { j2 ->
-                if (j1 != j2) {
-                    queue.add(Pair(j1, j2))
-                }
+            junctions.subList(index + 1, junctions.size).forEach { j2 ->
+                queue.add(Pair(j1, j2))
             }
         }
 
