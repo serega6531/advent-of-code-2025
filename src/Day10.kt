@@ -1,5 +1,9 @@
+import com.google.ortools.Loader
+import com.google.ortools.sat.CpModel
+import com.google.ortools.sat.CpSolver
+import com.google.ortools.sat.CpSolverStatus
+import com.google.ortools.sat.LinearExpr
 import java.util.*
-import kotlin.math.abs
 import kotlin.math.pow
 
 fun main() {
@@ -68,7 +72,7 @@ fun main() {
         return lights == targetLights
     }
 
-    fun getFewestPresses(machine: Machine): Int {
+    fun getFewestPressesForLights(machine: Machine): Int {
         val maxTries = 2.0.pow(machine.buttons.size).toInt()
 
         return (0..<maxTries)
@@ -77,14 +81,53 @@ fun main() {
             .minOfOrNull { it.cardinality() } ?: 0
     }
 
+    fun getFewestPressesForCounters(machine: Machine): Int {
+        Loader.loadNativeLibraries()
+
+        val model = CpModel()
+
+        val buttons = machine.buttons.mapIndexed { buttonIndex, buttonMask ->
+            val maxPresses = machine.joltages
+                .filterIndexed { counterIndex, _ -> buttonMask.get(counterIndex) }
+                .min()
+
+            model.newIntVar(0L, maxPresses.toLong(), "button_$buttonIndex")
+        }
+
+        machine.joltages.forEachIndexed { counterIndex, joltage ->
+            val presses = machine.buttons
+                .withIndex()
+                .filter { it.value.get(counterIndex) }
+                .map { buttons[it.index] }
+                .toTypedArray()
+
+            model.addEquality(LinearExpr.sum(presses), joltage.toLong())
+        }
+
+        model.minimize(LinearExpr.sum(buttons.toTypedArray()))
+
+        val solver = CpSolver()
+        val status = solver.solve(model)
+
+        return if (status == CpSolverStatus.OPTIMAL) {
+            val total = buttons.sumOf { solver.value(it).toInt() }
+            println("Solved $machine -> $total")
+            total
+        } else {
+            error("No solution found")
+        }
+    }
+
     fun part1(input: List<String>): Int {
         val machines = parseInput(input)
 
-        return machines.sumOf { getFewestPresses(it) }
+        return machines.sumOf { getFewestPressesForLights(it) }
     }
 
     fun part2(input: List<String>): Int {
-       TODO()
+        val machines = parseInput(input)
+
+        return machines.sumOf { getFewestPressesForCounters(it) }
     }
 
     val testInput = readInput("Day10_test")
