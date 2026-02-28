@@ -20,11 +20,17 @@ fun main() {
     }
 
     fun parseButtons(buttonsStr: String): List<BitSet> {
-        return buttonRegex.findAll(buttonsStr).map { buttonMatch ->
-            val bits = BitSet()
-            buttonMatch.groupValues[1].split(',').map { it.toInt() }.forEach { bits.set(it) }
-            bits
-        }.toList()
+        return buttonRegex.findAll(buttonsStr)
+            .map { buttonMatch ->
+                val bits = BitSet()
+
+                buttonMatch.groupValues[1]
+                    .split(',')
+                    .map { it.toInt() }
+                    .forEach { bits.set(it) }
+
+                bits
+            }.toList()
     }
 
     fun parseJoltages(joltagesStr: String): List<Int> {
@@ -45,9 +51,9 @@ fun main() {
         return input.map { parseMachine(it) }
     }
 
-    fun bitMaskToBitSet(mask: Int): BitSet {
+    fun Int.bitMaskToBitSet(): BitSet {
         val bitSet = BitSet()
-        var currentMask = mask
+        var currentMask = this
         var index = 0
         while (currentMask != 0) {
             if ((currentMask and 1) != 0) {
@@ -76,7 +82,7 @@ fun main() {
         val maxTries = 2.0.pow(machine.buttons.size).toInt()
 
         return (0..<maxTries)
-            .map { bitMaskToBitSet(it) }
+            .map { it.bitMaskToBitSet() }
             .filter { mask -> matchesTargetLights(machine, mask) }
             .minOfOrNull { it.cardinality() } ?: 0
     }

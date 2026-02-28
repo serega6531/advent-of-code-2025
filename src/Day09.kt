@@ -1,6 +1,4 @@
-import java.util.*
 import kotlin.math.abs
-import kotlin.math.pow
 
 fun main() {
 
