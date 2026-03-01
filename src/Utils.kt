@@ -30,6 +30,10 @@ operator fun <T> List<List<T>>.get(yx: YX): T {
     return this[yx.y][yx.x]
 }
 
+fun IntRange.intersects(other: IntRange): Boolean {
+    return this.first <= other.last && other.first <= this.last
+}
+
 /**
  * The cleaner shorthand for printing output.
  */
